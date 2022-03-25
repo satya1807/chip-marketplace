@@ -1,10 +1,10 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract Chip is ERC721 {
+contract Chip is ERC721URIStorage {
     using SafeMath for uint256;
 
     uint256 public totalSupply;
@@ -19,6 +19,7 @@ contract Chip is ERC721 {
         require(bytes(_uri).length > 0, "Invalid uri");
         totalSupply = totalSupply.add(1);
         _mint(msg.sender, totalSupply);
+        _setTokenURI(totalSupply, _uri);
         return totalSupply;
     }
 
