@@ -2,9 +2,10 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract Chip is ERC721URIStorage {
+contract Chip is ERC721URIStorage, ReentrancyGuard {
     using SafeMath for uint256;
 
     uint256 public totalSupply;
@@ -14,7 +15,12 @@ contract Chip is ERC721URIStorage {
         totalSupply = 0;
     }
 
-    function mint(string calldata _uri) external payable returns (uint256) {
+    function mint(string calldata _uri)
+        external
+        payable
+        nonReentrant
+        returns (uint256)
+    {
         require(msg.value == mintingFee, "Incorrect amount paid");
         require(bytes(_uri).length > 0, "Invalid uri");
         totalSupply = totalSupply.add(1);
