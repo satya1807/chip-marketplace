@@ -31,8 +31,7 @@ contract ChipExchange is ReentrancyGuard {
         uint256 indexed chipId,
         address indexed user,
         uint256 listingId,
-        uint256 price,
-        uint256 time
+        uint256 price
     );
 
     event Purchase(
@@ -70,13 +69,7 @@ contract ChipExchange is ReentrancyGuard {
             buyer: address(0),
             chipId: _chipId
         });
-        emit Listed(
-            _chipId,
-            msg.sender,
-            totalListings,
-            _price,
-            block.timestamp
-        );
+        emit Listed(_chipId, msg.sender, totalListings, _price);
         return totalListings;
     }
 
@@ -100,7 +93,6 @@ contract ChipExchange is ReentrancyGuard {
         uint256 price = item.price;
         uint256 chipId = item.chipId;
         item.isSold = true;
-        item.isActive = false;
         payable(seller).transfer(price);
         chip.transferFrom(address(this), buyer, chipId);
         emit Purchase(buyer, seller, _listingId);
@@ -113,9 +105,10 @@ contract ChipExchange is ReentrancyGuard {
         nonReentrant
     {
         Item storage item = listings[_listingId];
-        require(listings[_listingId].isActive, "Listing is already cancelled");
+        require(item.isActive, "Listing is already cancelled");
+        require(!item.isSold, "Chip already sold");
         require(
-            listings[_listingId].seller == msg.sender,
+            item.seller == msg.sender,
             "You are not the owner of this listing"
         );
         address owner = item.seller;
