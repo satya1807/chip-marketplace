@@ -4,10 +4,11 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./Minter.sol";
 
-contract ChipExchange is ReentrancyGuard {
+contract ChipExchange is ReentrancyGuard, Ownable {
     using Address for address;
     using SafeMath for uint256;
 
@@ -88,6 +89,7 @@ contract ChipExchange is ReentrancyGuard {
         Item storage item = listings[_listingId];
         require(msg.value == item.price, "Invalid price paid");
         require(item.isActive, "Listing is inactive");
+        require(!item.isSold, "Item already sold");
         address seller = item.seller;
         address payable buyer = payable(msg.sender);
         uint256 price = item.price;
@@ -116,6 +118,12 @@ contract ChipExchange is ReentrancyGuard {
         item.isActive = false;
         chip.transferFrom(address(this), owner, tokenId);
         emit ListingCancelled(_listingId, owner);
+    }
+
+    function collectFee() external onlyOwner returns (uint256) {
+        uint256 bal = address(this).balance;
+        payable(msg.sender).transfer(bal);
+        return bal;
     }
 
     function getMyListings() external view returns (Item[] memory) {
