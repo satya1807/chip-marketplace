@@ -136,4 +136,29 @@ describe("KudoBadgeExchange: Listing", () => {
             ).to.be.revertedWith("You are not the owner of this listing");
         });
     });
+
+    describe("Get My Listings", () => {
+        beforeEach(async () => {
+            listingId = await exchange.callStatic.list(chipId, price, {
+                value: amount,
+            });
+            await exchange.list(chipId, price, {
+                value: amount,
+            });
+        });
+
+        it(".. should pass retreiving all the listings for user who listed", async () => {
+            let listings = await exchange.getMyListings();
+
+            listings.forEach((element) => {
+                expect(element.price).to.be.equal(price);
+                expect(element.seller).to.equal(deployer.address);
+            });
+        });
+
+        it(".. should pass on returning empty list for the user who have not listed", async () => {
+            let listings = await exchange.connect(alice).getMyListings();
+            expect(listings.length).to.equal(0);
+        });
+    });
 });
